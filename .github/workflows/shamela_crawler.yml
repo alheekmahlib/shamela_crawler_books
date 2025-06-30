@@ -24,8 +24,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install uv
-          uv sync
+          pip install scrapy
+          pip install -e ${{ github.workspace }}
 
       - name: Run Shamela Crawler
         run: scrapy crawl book -a book_id=${{ github.event.inputs.book_id || '1' }} -s MAKE_JSON=true -o book_${{ github.event.inputs.book_id || '1' }}.json
