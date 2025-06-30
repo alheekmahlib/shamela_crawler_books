@@ -26,11 +26,9 @@ jobs:
         run: |
           pip install scrapy
           pip install -e .
-        working-directory: shamela_crawler
 
       - name: Run Shamela Crawler
         run: scrapy crawl book -a book_id=${{ github.event.inputs.book_id || '1' }} -s MAKE_JSON=true -o book_${{ github.event.inputs.book_id || '1' }}.json
-        working-directory: shamela_crawler
 
       - name: Commit and push JSON
         run: |
@@ -39,6 +37,5 @@ jobs:
           git add book_*.json
           git commit -m "Add crawled book JSON for book ID ${{ github.event.inputs.book_id || '1' }}"
           git push
-        working-directory: shamela_crawler
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
