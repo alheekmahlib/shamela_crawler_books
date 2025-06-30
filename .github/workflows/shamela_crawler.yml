@@ -1,0 +1,44 @@
+name: Shamela Book Crawler
+
+on:
+  workflow_dispatch:
+    inputs:
+      book_id:
+        description: 'Book ID to crawl'
+        required: true
+        default: '1'
+  schedule:
+    - cron: '0 0 * * 0' # Run every Sunday at midnight UTC
+
+jobs:
+  crawl-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install scrapy
+          pip install -e .
+        working-directory: shamela_crawler
+
+      - name: Run Shamela Crawler
+        run: scrapy crawl book -a book_id=${{ github.event.inputs.book_id || '1' }} -s MAKE_JSON=true -o book_${{ github.event.inputs.book_id || '1' }}.json
+        working-directory: shamela_crawler
+
+      - name: Commit and push JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add book_*.json
+          git commit -m "Add crawled book JSON for book ID ${{ github.event.inputs.book_id || '1' }}"
+          git push
+        working-directory: shamela_crawler
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
